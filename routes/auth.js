@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/User");
-
+const auth = require("../middleware/auth");
 // @route   GET api/user
 // @desc    get user info
 // @access  nun
@@ -12,6 +12,37 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send({ success: false, masssage: "no products" });
+  }
+});
+
+
+// @route   GET api/user/all
+// @desc    get all users
+// @access  private admin
+// @query   userEmail,skip,limit
+router.get("/all", auth, async (req, res) => {
+  try {
+    let { userEmail, skip, limit } = req.query;
+    skip = Number(skip);
+    limit = Number(limit);
+    function matchQuery() {
+      if (userEmail) {
+        return {
+          userEmail: userEmail,
+        };
+      } else {
+        return {};
+      }
+    }
+    const users = await UserModel.aggregate()
+      .match(matchQuery())
+      .skip(skip ? skip : 0)
+      .limit(limit ? limit : 10);
+
+    res.status(200).send(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send({ success: false, masssage: "no userss" });
   }
 });
 
