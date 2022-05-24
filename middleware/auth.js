@@ -9,8 +9,8 @@ module.exports = function (req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_TOKEN);
-
-    console.log(decoded);
+    req.userEmail = decoded.email;
+    //console.log("decoded", decoded.email);
     next();
   } catch (err) {
     res.status(403).json({ msg: "token is not valid forbiden 403" });
