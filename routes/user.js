@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const UserModel = require("../models/User");
-const adminAuth = require("../middleware/adminAuth")
+const adminAuth = require("../middleware/adminAuth");
 const auth = require("../middleware/auth");
 
 // @route   GET api/user
@@ -29,7 +29,7 @@ router.get("/all", auth, async (req, res) => {
     function matchQuery() {
       if (userEmail) {
         return {
-          userEmail: userEmail,
+          email: userEmail,
         };
       } else {
         return {};
@@ -50,30 +50,47 @@ router.get("/all", auth, async (req, res) => {
 // @route   GET api/user/admin
 // @desc    check is admin
 // @access  admin -
-router.get("/admin",auth,adminAuth, async (req, res) => {
+router.get("/admin", auth, adminAuth, async (req, res) => {
   res.send({
-    admin:true
-  })
+    admin: true,
+  });
+});
+
+// @route   PUT api/user
+// @desc    Edit user profile
+// @access  auth
+router.put("/", auth, async (req, res) => {
+  const { userId } = req.query;
+  const { address, displayName,phone,education } = req.body;
+  console.log(address, displayName,phone,education);
+  try {
+    const user = await UserModel.findById(userId);
+    user.displayName = displayName;
+    user.address = address;
+    user.phone = phone;
+    user.education = education;
+    await user.save();
+    res.status(200).send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ success: false, message: "sorry error" });
+  }
 });
 
 // @route   PUT api/user/admin
 // @desc    Edit Admin
 // @access  nun
-router.put("/admin",auth, adminAuth, async (req, res) => {
+router.put("/admin", auth, adminAuth, async (req, res) => {
   let { userId } = req.query;
   try {
     const user = await UserModel.findById(userId);
-    user.isAdmin = !user.isAdmin
+    user.isAdmin = !user.isAdmin;
     await user.save();
     res.status(200).send(user);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .send({ success: false, message: "sorry error" });
+    res.status(500).send({ success: false, message: "sorry error" });
   }
 });
-
-
 
 module.exports = router;
