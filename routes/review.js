@@ -7,9 +7,9 @@ const auth = require("../middleware/auth");
 // @desc    get all product
 // @access  private
 // @query   userEmail,club,skip,limit
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    let { userEmail, skip, limit } = req.query;
+    let { userEmail, skip, limit, sort } = req.query;
     skip = Number(skip);
     limit = Number(limit);
     function matchQuery() {
@@ -23,8 +23,9 @@ router.get("/", auth, async (req, res) => {
     }
     const review = await ReviewModel.aggregate()
       .match(matchQuery())
+      .sort({"date": -1})
       .skip(skip ? skip : 0)
-      .limit(limit ? limit : 10);
+      .limit(limit ? limit : 6);
 
     res.status(200).send(review);
   } catch (err) {

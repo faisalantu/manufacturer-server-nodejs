@@ -9,11 +9,13 @@ const adminAuth = require("../middleware/adminAuth");
 // @desc    get all product
 // @access  private
 // @query   userEmail,club,skip,limit
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    let { userEmail, skip, limit } = req.query;
+    let { userEmail, skip, limit,sort } = req.query;
     skip = Number(skip);
     limit = Number(limit);
+    sort = Number(sort);
+
     function matchQuery() {
       if (userEmail) {
         return {
@@ -25,8 +27,9 @@ router.get("/", auth, async (req, res) => {
     }
     const product = await ProductModel.aggregate()
       .match(matchQuery())
+      .sort(sort? `${sort}` : "1")
       .skip(skip ? skip : 0)
-      .limit(limit ? limit : 10);
+      .limit(limit ? limit : 10)
 
     res.status(200).send(product);
   } catch (err) {
@@ -152,7 +155,7 @@ router.put("/", auth, adminAuth, async (req, res) => {
     product.price = price;
     product.imageUrl = imageUrl;
     await product.save();
-    res.status(200).send(product);
+    res.status(200).send({success: true, message:"product updated"});
   } catch (err) {
     console.log(err);
     res
